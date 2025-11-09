@@ -1,4 +1,4 @@
-import type { DUIConfig } from '../model';
+import { DUIConfig } from '../model';
 import type { ConfigProvider } from '../provider';
 import { ConfigSource } from './base';
 import { ConfigException } from '../exception';
@@ -65,8 +65,8 @@ export class CachedConfigSource implements ConfigSource {
         }
 
         // Parse the JSON string into a config object
-        const config = JSON.parse(cachedJson) as DUIConfig;
-
+        const config = new DUIConfig(JSON.parse(cachedJson));
+        console.log('Loaded cached config:', config);
         // Initialize functions from the remote path with version info
         await this.provider.initFunctions({
             remotePath: config.functionsFilePath,

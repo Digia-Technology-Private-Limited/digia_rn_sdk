@@ -19,7 +19,7 @@
     "rootDir": "./src",
     "declaration": true,
     "sourceMap": true,
-    "jsx": "react",
+    "jsx": "react-native",
     "module": "commonjs",
     "downlevelIteration": true
   },

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { VirtualWidget } from './VirtualWidget';
-import { RenderPayload } from '../../framework/types';
+import { RenderPayload } from '../../framework/render_payload';
 
 /**
  * Widget that uses a builder function to render

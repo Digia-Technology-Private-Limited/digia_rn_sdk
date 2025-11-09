@@ -3,10 +3,8 @@ import { Logger } from './logger';
 /**
  * Abstract interface for file operations.
  * 
- * Note: This requires react-native-fs to be installed in the consuming app.
- * Install with: npm install react-native-fs
- * 
- * Or implement your own FileOperations using any storage solution.
+ * Provides file system operations like reading, writing, deleting files.
+ * Implementations should handle platform-specific file operations.
  */
 export abstract class FileOperations {
     abstract get localPath(): Promise<string>;
@@ -21,40 +19,43 @@ export abstract class FileOperations {
 /**
  * Default implementation of FileOperations using react-native-fs.
  * 
- * IMPORTANT: This class requires react-native-fs to be installed in your app:
- * ```bash
- * npm install react-native-fs
- * cd ios && pod install
- * ```
- * 
- * If you don't want file system dependencies, use a custom implementation
- * or use the SDK's storage system instead.
  */
 export class FileOperationsImpl implements FileOperations {
     private RNFS: any = null;
+    private initialized: boolean = false;
 
     constructor() {
         try {
             // Dynamically require RNFS to avoid build errors if not installed
             this.RNFS = require('react-native-fs');
+
+            // Verify RNFS is properly initialized (has native modules)
+            if (this.RNFS && this.RNFS.DocumentDirectoryPath) {
+                this.initialized = true;
+            } else {
+                Logger.warning(
+                    'react-native-fs is not properly linked. The consuming app needs to install it and rebuild.',
+                    'FileOperations'
+                );
+            }
         } catch (e) {
             Logger.warning(
-                'react-native-fs not found. File operations will not work. Install with: npm install react-native-fs',
+                'react-native-fs not found. The consuming app must install it: npm install react-native-fs',
                 'FileOperations'
             );
         }
     }
 
     get localPath(): Promise<string> {
-        if (!this.RNFS) {
-            throw new Error('react-native-fs is not installed');
+        if (!this.initialized || !this.RNFS) {
+            throw new Error('react-native-fs is not installed or not properly linked');
         }
         return Promise.resolve(this.RNFS.DocumentDirectoryPath);
     }
 
     async writeStringToFile(data: string, fileName: string): Promise<boolean> {
-        if (!this.RNFS) {
-            Logger.error('react-native-fs is not installed', 'FileOperations');
+        if (!this.initialized || !this.RNFS) {
+            Logger.error('react-native-fs is not installed or not properly linked', 'FileOperations');
             return false;
         }
 
@@ -65,7 +66,7 @@ export class FileOperationsImpl implements FileOperations {
             Logger.log(`File written successfully to ${filePath}`, 'FileOperations');
             return true;
         } catch (e) {
-            Logger.error(`An error occurred: ${e}`, 'FileOperations', e);
+            Logger.error(`An error occurred: ${e}`, 'FileOperations');
             return false;
         }
     }
@@ -74,8 +75,8 @@ export class FileOperationsImpl implements FileOperations {
         data: Uint8Array | number[],
         fileName: string
     ): Promise<boolean> {
-        if (!this.RNFS) {
-            Logger.error('react-native-fs is not installed', 'FileOperations');
+        if (!this.initialized || !this.RNFS) {
+            Logger.error('react-native-fs is not installed or not properly linked', 'FileOperations');
             return false;
         }
 
@@ -90,14 +91,14 @@ export class FileOperationsImpl implements FileOperations {
             Logger.log(`File written successfully to ${filePath}`, 'FileOperations');
             return true;
         } catch (e) {
-            Logger.error(`An error occurred: ${e}`, 'FileOperations', e);
+            Logger.error(`An error occurred: ${e}`, 'FileOperations');
             return false;
         }
     }
 
     async readString(fileName: string): Promise<string | null> {
-        if (!this.RNFS) {
-            Logger.error('react-native-fs is not installed', 'FileOperations');
+        if (!this.initialized || !this.RNFS) {
+            Logger.error('react-native-fs is not installed or not properly linked', 'FileOperations');
             return null;
         }
 
@@ -107,14 +108,14 @@ export class FileOperationsImpl implements FileOperations {
             const content = await this.RNFS.readFile(filePath, 'utf8');
             return content;
         } catch (e) {
-            Logger.error(`An error occurred: ${e}`, 'FileOperations', e);
+            Logger.error(`An error occurred: ${e}`, 'FileOperations');
             return null;
         }
     }
 
     async exists(fileName: string): Promise<boolean> {
-        if (!this.RNFS) {
-            Logger.error('react-native-fs is not installed', 'FileOperations');
+        if (!this.initialized || !this.RNFS) {
+            Logger.error('react-native-fs is not installed or not properly linked', 'FileOperations');
             return false;
         }
 
@@ -124,14 +125,14 @@ export class FileOperationsImpl implements FileOperations {
             const fileExists = await this.RNFS.exists(filePath);
             return fileExists;
         } catch (e) {
-            Logger.error(`An error occurred: ${e}`, 'FileOperations', e);
+            Logger.error(`An error occurred: ${e}`, 'FileOperations');
             return false;
         }
     }
 
     async delete(fileName: string): Promise<void> {
-        if (!this.RNFS) {
-            throw new Error('react-native-fs is not installed');
+        if (!this.initialized || !this.RNFS) {
+            throw new Error('react-native-fs is not installed or not properly linked');
         }
 
         const path = await this.localPath;
@@ -143,8 +144,8 @@ export class FileOperationsImpl implements FileOperations {
     }
 
     async lastModified(fileName: string): Promise<Date> {
-        if (!this.RNFS) {
-            throw new Error('react-native-fs is not installed');
+        if (!this.initialized || !this.RNFS) {
+            throw new Error('react-native-fs is not installed or not properly linked');
         }
 
         const path = await this.localPath;
@@ -163,21 +164,5 @@ export class FileOperationsImpl implements FileOperations {
             binary += String.fromCharCode(bytes[i]);
         }
         return btoa(binary);
-    }
-}
-
-/**
- * Creates a FileOperations instance.
- * Returns null if react-native-fs is not available.
- */
-export function createFileOperations(): FileOperations | null {
-    try {
-        return new FileOperationsImpl();
-    } catch (e) {
-        Logger.warning(
-            'FileOperations not available. Install react-native-fs if you need file system access.',
-            'FileOperations'
-        );
-        return null;
     }
 }

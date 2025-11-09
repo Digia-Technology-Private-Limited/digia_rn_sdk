@@ -1,7 +1,8 @@
-import type { DUIConfig } from '../model';
-import type { ConfigProvider, JsonLike } from '../provider';
+import { DUIConfig } from '../model';
+import type { ConfigProvider } from '../provider';
 import { ConfigSource } from './base';
 import { ConfigException } from '../exception';
+import { JsonLike } from '../../framework/utils';
 
 /**
  * Options for creating a NetworkFileConfigSource.
@@ -85,7 +86,7 @@ export class NetworkFileConfigSource implements ConfigSource {
         // 2. Download and cache the file
         const fileUrl = this.getFileUrl(metadata);
         const config = await this.downloadAndCacheConfig(fileUrl);
-
+        console.log('Downloaded new config from network:', config);
         // 3. Initialize functions
         await this.provider.initFunctions({
             remotePath: config.functionsFilePath,
@@ -151,7 +152,7 @@ export class NetworkFileConfigSource implements ConfigSource {
             throw new ConfigException('No cached config found');
         }
 
-        return JSON.parse(cachedJson) as DUIConfig;
+        return new DUIConfig(JSON.parse(cachedJson));
     }
 
     /**
@@ -187,6 +188,6 @@ export class NetworkFileConfigSource implements ConfigSource {
         const fileString = new TextDecoder('utf-8').decode(file.data);
 
         // Parse and return config
-        return JSON.parse(fileString) as DUIConfig;
+        return new DUIConfig(JSON.parse(fileString));
     }
 }

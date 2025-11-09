@@ -13,7 +13,8 @@ import { FileDownloaderImpl } from '../utils/download_operations';
 import { ConfigException } from './exception';
 import type { ConfigSource } from './source/base';
 import { DUIConfig } from './model';
-import type { ConfigProvider, JsonLike } from './provider';
+import type { ConfigProvider } from './provider';
+import { JsonLike } from '../framework/utils';
 
 /**
  * Configuration resolver implementing the ConfigProvider interface.
@@ -93,19 +94,19 @@ export class ConfigResolver implements ConfigProvider {
       );
       this.functions = getJSFunction();
     }
-
-    if (options.remotePath !== undefined) {
+    console.log('ConfigResolver initFunctions called with options:', options);
+    if (options.remotePath !== undefined && options.remotePath !== null && options.remotePath !== '') {
       const res = await this.functions.initFunctions(
-        new PreferRemote(options.remotePath, options.version)
+        new PreferRemote(options.remotePath!, options.version)
       );
       if (!res) {
         throw new ConfigException('Functions not initialized');
       }
     }
 
-    if (options.localPath !== undefined) {
+    if (options.localPath !== undefined && options.localPath !== null && options.localPath !== '') {
       const res = await this.functions.initFunctions(
-        new PreferLocal(options.localPath)
+        new PreferLocal(options.localPath!)
       );
       if (!res) {
         throw new ConfigException('Functions not initialized');
@@ -122,11 +123,13 @@ export class ConfigResolver implements ConfigProvider {
    * @returns The complete DUIConfig instance with JavaScript functions attached
    */
   async getConfig(): Promise<DUIConfig> {
-    // TODO: Implement ConfigStrategyFactory to determine the correct source
-    // For now, throw an error indicating it needs implementation
-    throw new ConfigException(
-      'ConfigStrategyFactory not yet implemented. Use specific config sources directly.'
-    );
+    const { ConfigStrategyFactory } = await import('./factory');
+
+    const strategy = ConfigStrategyFactory.createStrategy(this.flavorInfo, this);
+    const config = await strategy.getConfig();
+    config.jsFunctions = this.functions;
+
+    return config;
   }
 
   /**

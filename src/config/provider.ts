@@ -1,12 +1,8 @@
 import type { FileOperations } from '../utils/file_operations';
 import type { FileDownloader } from '../utils/download_operations';
 import type { AssetBundleOperations } from '../utils/asset_bundle_operations';
+import { JsonLike } from '../framework/utils';
 
-/**
- * JSON-like type representing arbitrary JSON data structures.
- * Equivalent to Flutter's JsonLike type.
- */
-export type JsonLike = Record<string, any>;
 
 /**
  * Options for initializing configuration provider functions.

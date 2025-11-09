@@ -92,6 +92,7 @@ export class DUIConfig {
      * @param data - The configuration data object
      */
     constructor(data: any) {
+        console.log('DUIConfig initializing with data:', data);
         this.themeConfig = as(data?.theme, TypeValidators.object);
         this.pages = as(data?.pages, TypeValidators.object);
         this.components = as$(data?.components, TypeValidators.object) ?? undefined;

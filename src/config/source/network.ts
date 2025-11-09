@@ -1,4 +1,4 @@
-import type { DUIConfig } from '../model';
+import { DUIConfig } from '../model';
 import type { ConfigProvider } from '../provider';
 import { ConfigSource } from './base';
 import { ConfigException, ConfigErrorType } from '../exception';
@@ -71,17 +71,19 @@ export class NetworkConfigSource implements ConfigSource {
      */
     async getConfig(): Promise<DUIConfig> {
         try {
+            console.log('Fetching config from network:', this.networkPath);
             const networkData = await this.provider.getAppConfigFromNetwork(
                 this.networkPath
             );
 
+            console.log('Network response received:', networkData);
             if (!networkData) {
                 throw new ConfigException(
                     'Network response is null',
                     { type: ConfigErrorType.Network }
                 );
-            } const appConfig = networkData as DUIConfig;
-
+            } const appConfig = new DUIConfig(networkData);
+            console.log('Parsed DUIConfig from network:', appConfig);
             await this.provider.initFunctions({
                 remotePath: appConfig.functionsFilePath,
             });

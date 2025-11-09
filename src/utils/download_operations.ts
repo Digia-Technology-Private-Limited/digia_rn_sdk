@@ -55,6 +55,16 @@ export class FileDownloaderImpl implements FileDownloader {
     ): Promise<AxiosResponse<ArrayBuffer> | null> {
         const retry = options?.retry ?? 0;
 
+        // Validate URL is not empty
+        if (!url || url.trim() === '') {
+            // Logger.error(
+            //     `Cannot download file: URL is empty for file "${fileName}"`,
+            //     'FileDownloader'
+            // );
+            return null;
+        }
+
+        console.log('Download attempt:', url, 'for file:', fileName);
         try {
             // Send GET request to download the file
             const response = await this.client.get<ArrayBuffer>(url, {

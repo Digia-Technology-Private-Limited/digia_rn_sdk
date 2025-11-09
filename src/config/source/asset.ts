@@ -1,5 +1,6 @@
-import type { DUIConfig } from '../model';
-import type { ConfigProvider, JsonLike } from '../provider';
+import { JsonLike } from '../../framework/utils';
+import { DUIConfig } from '../model';
+import type { ConfigProvider } from '../provider';
 import { ConfigSource } from './base';
 
 /**
@@ -61,7 +62,7 @@ export class AssetConfigSource implements ConfigSource {
 
         // Parse the JSON string into a config object
         const configData = JSON.parse(burnedJson) as JsonLike;
-
+        console.log('Loaded config from assets:', configData);
         // Initialize functions from the bundled path
         await this.provider.initFunctions({
             localPath: this.functionsPath,
@@ -69,6 +70,6 @@ export class AssetConfigSource implements ConfigSource {
 
         // Return the parsed config data as DUIConfig
         // Note: In TypeScript, we trust the JSON structure matches DUIConfig
-        return configData as DUIConfig;
+        return new DUIConfig(configData);
     }
 }

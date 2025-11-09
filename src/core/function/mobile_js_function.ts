@@ -138,6 +138,7 @@ export class MobileJsFunctions implements JSFunctions {
      * @returns Promise resolving to true if successful, false otherwise
      */
     async initFunctions(strategy: FunctionInitStrategy): Promise<boolean> {
+        console.log('Strategy:', strategy);
         try {
             if (strategy instanceof PreferRemote) {
                 const fileName = JSFunctions.getFunctionsFileName(strategy.version);

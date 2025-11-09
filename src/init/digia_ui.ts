@@ -2,10 +2,7 @@ import { Platform } from 'react-native';
 import { DUIConfig } from '../config/model';
 import { NetworkClient } from '../network/network_client';
 import { NetworkConfiguration } from '../network/network_config';
-import { DeveloperConfig } from '../dui_config';
 import { DigiaUIOptions } from './options';
-import { Variable } from '../framework/data_type/variable';
-import { APIModel } from '../network/api_request/api_request';
 import { ConfigResolver } from '../config/ConfigResolver';
 
 /**
@@ -22,9 +19,7 @@ try {
 /**
  * SDK version constant
  */
-const SDK_VERSION = '1.0.0';
-
-
+const packageVersion = '1.0.0';
 
 /**
  * Core DigiaUI class responsible for initializing and managing the SDK.
@@ -63,7 +58,7 @@ export class DigiaUI {
      *
      * This is the main initialization method that sets up the SDK for use.
      * It performs the following operations:
-     * - Initializes storage (if custom storage provided)
+     * - Initializes shared preferences store (if needed)
      * - Creates network client with proper headers
      * - Loads configuration from the server
      * - Sets up state observers if provided
@@ -76,9 +71,7 @@ export class DigiaUI {
      * ```typescript
      * const digiaUI = await DigiaUI.initialize({
      *   accessKey: 'your-access-key',
-     *   flavor: {
-     *     environment: Environment.PRODUCTION
-     *   },
+     *   flavor: Flavors.debug(),
      *   networkConfiguration: NetworkConfiguration.withDefaults(),
      *   developerConfig: new DeveloperConfig({
      *     baseUrl: 'https://api.digia.tech/api/v1'
@@ -87,25 +80,22 @@ export class DigiaUI {
      * ```
      */
     static async initialize(options: DigiaUIOptions): Promise<DigiaUI> {
-        // Note: Storage initialization is optional in React Native
-        // Users can call setCustomStorage() before this if they want persistence
+        // Note: PreferencesStore initialization can be added here if needed
+        // await PreferencesStore.instance.initialize();
 
-        // Create headers with device/app information
-        const headers = await this._createDigiaHeaders(options, null);
+        const headers = await this._createDigiaHeaders(options, '');
 
-        // Determine base URL
-        const baseUrl = options.developerConfig?.baseUrl || 'https://app.digia.tech/api/v1';
-
-        // Create network client
         const networkClient = new NetworkClient(
-            baseUrl,
+            options.developerConfig?.baseUrl ?? 'https://app.digia.tech/api/v1',
             headers,
-            options.networkConfiguration || NetworkConfiguration.withDefaults(),
+            options.networkConfiguration ?? NetworkConfiguration.withDefaults(),
             options.developerConfig
         );
 
-        const config =
-            await new ConfigResolver(options.flavor, networkClient).getConfig();
+        const config = await new ConfigResolver(
+            options.flavor,
+            networkClient
+        ).getConfig();
 
         return new DigiaUI(options, networkClient, config);
     }
@@ -151,14 +141,14 @@ export class DigiaUI {
         }
 
         return NetworkClient.getDefaultDigiaHeaders(
-            SDK_VERSION,
+            packageVersion,
             options.accessKey,
             this._getPlatform(),
             uuid,
             packageName,
             appVersion,
             appBuildNumber,
-            options.flavor.environment.toString(),
+            options.flavor.environment.name,
             buildSignature
         );
     }
@@ -169,7 +159,7 @@ export class DigiaUI {
      * @returns Platform identifier string:
      * - 'ios' for iOS devices
      * - 'android' for Android devices
-     * - 'web' for web platform
+     * - 'mobile_web' for web or other platforms
      */
     private static _getPlatform(): string {
         if (Platform.OS === 'web') {
@@ -185,33 +175,5 @@ export class DigiaUI {
         }
 
         return 'mobile_web';
-    }
-
-    /**
-     * Get the current DSL configuration.
-     *
-     * @returns The current DUIConfig
-     */
-    getConfig(): DUIConfig {
-        return this.dslConfig;
-    }
-
-    /**
-     * Refresh the configuration from the server.
-     *
-     * @returns The updated DUIConfig
-     */
-    async refreshConfig(): Promise<DUIConfig> {
-        // TODO: Implement ConfigResolver and refresh logic
-        throw new Error('Not implemented yet');
-    }
-
-    /**
-     * Get the network client instance.
-     *
-     * @returns The NetworkClient instance
-     */
-    getNetworkClient(): NetworkClient {
-        return this.networkClient;
     }
 }

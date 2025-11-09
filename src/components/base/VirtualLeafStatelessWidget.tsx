@@ -6,6 +6,7 @@ import { CommonProps } from '../../framework/models/common_props';
 import { wrapInContainer, wrapInAlign, wrapInGestureDetector } from '../../framework/utils/widget_util';
 import { To } from '../../framework/utils/type_convertors';
 import { DefaultErrorWidget } from './default_error_widget';
+import { Props } from '../../framework/models/props';
 
 export abstract class VirtualLeafStatelessWidget<T> extends VirtualWidget {
     props: T;
@@ -16,7 +17,7 @@ export abstract class VirtualLeafStatelessWidget<T> extends VirtualWidget {
         commonProps?: CommonProps;
         parent?: VirtualWidget;
         refName?: string;
-        parentProps?: any;
+        parentProps?: Props;
     }) {
         super({
             parent: options.parent,

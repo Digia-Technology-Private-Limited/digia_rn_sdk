@@ -7,6 +7,26 @@
 // Core initialization
 export { DigiaUI } from './init/digia_ui';
 export { DigiaUIManager, getDigiaUIManager } from './init/digia_ui_manager';
+export type { DigiaUIOptions } from './init/options';
+export { Flavors, InitStrategies } from './init/flavor';
+export { Environment } from './init/environment';
+export type {
+  Flavor,
+  DebugFlavor,
+  StagingFlavor,
+  VersionedFlavor,
+  ReleaseFlavor,
+  DSLInitStrategy,
+  NetworkFirstStrategy,
+  CacheFirstStrategy,
+  LocalFirstStrategy,
+} from './init/flavor';
+
+// App components
+export * from './app';
+
+// UI Factory
+export { DUIFactory, getDUIFactory } from './components/ui_factory';
 
 // Configuration
 export * from './dui_config';
@@ -42,18 +62,9 @@ export * from './framework/data_type/data_type';
 export { Variable } from './framework/data_type/variable';
 
 // Framework types
-export * from './framework/types';
 
 // Base widget classes
 export * from './components/base';
 
-// Components
-export { ComponentRegistry } from './components/ComponentRegistry';
-export { ContainerComponent } from './components/primitives/Container';
-export { TextComponent } from './components/primitives/Text';
-export { ButtonComponent } from './components/primitives/Button';
-export { ImageComponent } from './components/primitives/Image';
-
 // Actions
-export { ActionExecutor } from './actions/ActionExecutor';
-export * from './actions/processors';
+export * from './framework/actions';
