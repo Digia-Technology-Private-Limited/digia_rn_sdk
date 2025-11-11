@@ -15,10 +15,14 @@ import { JsonLike } from '../framework/utils/types';
 import { DUIFontFactory } from '../framework/font_factory';
 import { ColorUtil } from '../framework/utils/color_util';
 import { as$ } from '../framework/utils/functional_utils';
+import { To } from '../framework/utils/type_convertors';
+import { NumUtil } from '../framework/utils/num_util';
+import { tryKeys } from '../framework/utils/json_util';
 import { Image, TextStyle } from 'react-native';
 import { createDUIPageRoute, DUIPageRoute } from './page/page_route';
 import { presentBottomSheet } from '../framework/utils/navigation_util';
 import { VirtualWidget } from './base/VirtualWidget';
+import { convertToTextStyle } from '../framework/utils/textstyle_util';
 
 /**
  * Central factory class for creating Digia UI widgets, pages, and components.
@@ -54,7 +58,7 @@ export class DUIFactory {
     resources!: UIResources;
 
     /** Registry for managing virtual widget types and their builders */
-    widgetRegistry!: VirtualWidgetRegistry;
+    widgetRegistry!: DefaultVirtualWidgetRegistry;
 
     /** Registry for method bindings used in expressions */
     bindingRegistry: any; // TODO: Implement MethodBindingRegistry
@@ -171,9 +175,7 @@ export class DUIFactory {
         fontToken: any,
         fontFactory: DUIFontFactory | null | undefined
     ): TextStyle | null {
-        // TODO: Implement font token to TextStyle conversion
-        // This would use the fontFactory if provided
-        return null;
+        return convertToTextStyle(fontToken, fontFactory);
     }
 
     /**
@@ -314,9 +316,11 @@ export class DUIFactory {
             childGroups?: Map<string, VirtualWidget[]>,
         ) => VirtualWidget
     ): void {
-        if (this.widgetRegistry && typeof (this.widgetRegistry as any).registerJsonWidget === 'function') {
-            (this.widgetRegistry as any).registerJsonWidget(type, builder);
+        if (!this.widgetRegistry || typeof (this.widgetRegistry as any).registerJsonWidget !== 'function') {
+            throw new Error('widgetRegistry is not initialized. Call DUIFactory.initialize() before registering widgets.');
         }
+
+        (this.widgetRegistry as any).registerJsonWidget(type, builder);
     }
 
     /**
@@ -333,11 +337,24 @@ export class DUIFactory {
      * );
      * ```
      */
-    registerWidget(
+    /**
+     * Register a typed widget builder that deserializes props from JSON.
+     * This mirrors the Dart signature:
+     * registerWidget<T>(type, fromJsonT, builder)
+     */
+    registerWidget<T>(
         type: string,
-        builder: (data: any, registry: any, parent?: any) => any
+        fromJsonT: (json: JsonLike) => T,
+        builder: (
+            props: T,
+            childGroups?: Map<string, VirtualWidget[]>,
+        ) => VirtualWidget
     ): void {
-        VirtualWidgetRegistry.register(type, builder);
+        if (!this.widgetRegistry || typeof (this.widgetRegistry as any).registerWidget !== 'function') {
+            throw new Error('widgetRegistry is not initialized. Call DUIFactory.initialize() before registering widgets.');
+        }
+
+        (this.widgetRegistry as any).registerWidget(type, fromJsonT, builder);
     }
 
     /**

@@ -185,12 +185,21 @@ export function wrapInAlign(options: {
         return <>{child}</>;
     }
 
+    // Convert Flutter alignment to React Native flexbox style
+    const alignStyle: ViewStyle = {
+        flex: 1,
+        justifyContent: alignment.justifyContent,
+        alignItems: alignment.alignItems,
+        alignSelf: alignment.alignSelf,
+    };
+
     return (
-        <View style={alignment}>
+        <View style={alignStyle}>
             {child}
         </View>
     );
 }
+
 
 /**
  * Wraps a child component with aspect ratio constraint.

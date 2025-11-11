@@ -57,6 +57,9 @@ export class CommonStyle implements CommonStyleProps {
             bgColor: tryKeys<ExprOr<string>>(
                 json,
                 ['bgColor', 'backgroundColor'],
+                {
+                    parse: (it: any) => ExprOr.fromJson<string>(it),
+                }
             ) ?? undefined,
             borderRadius: tryKeys(
                 json,

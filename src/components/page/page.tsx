@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useCallback } from 'react';
-import { BackHandler } from 'react-native';
+import { BackHandler, View } from 'react-native';
 import { DUIPageDefinition } from '../../framework/models/page_definition';
 import { UIResources } from '../ui_resources';
 import { VirtualWidgetRegistry } from '../virtual_widget_registry';
@@ -281,7 +281,7 @@ const DUIPageContent: React.FC<DUIPageContentProps> = ({
         return null;
     }
 
-    const virtualWidget = VirtualWidgetRegistry.create(rootNode, undefined);
+    const virtualWidget = registry.createWidget(rootNode, undefined);
 
     // Create action executor
     const actionExecutor = new ActionExecutor({

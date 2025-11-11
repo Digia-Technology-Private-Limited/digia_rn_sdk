@@ -12,7 +12,7 @@ import { CommonProps } from '../../framework/models/common_props';
  */
 const MarqueeText: React.FC<{
     text: string;
-    style?: TextStyle;
+    style?: TextStyle | null;
     maxLines?: number | null;
     textAlign?: TextStyle['textAlign'];
 }> = ({ text, style, maxLines, textAlign }) => {

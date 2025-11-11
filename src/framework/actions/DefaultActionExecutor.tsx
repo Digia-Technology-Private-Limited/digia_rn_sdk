@@ -85,17 +85,3 @@ export function useActionExecutor(): ActionExecutor {
     return actionExecutor;
 }
 
-/**
- * Legacy function to retrieve ActionExecutor from context (for compatibility).
- * 
- * @deprecated Use useActionExecutor hook instead
- * @param context - React context (not used, for API compatibility)
- * @returns The ActionExecutor instance
- */
-export function getActionExecutor(context?: any): ActionExecutor {
-    // In React, we can't access context outside of hooks
-    // This function is provided for API compatibility but should use the hook instead
-    throw new Error(
-        'getActionExecutor is not supported in React. Use useActionExecutor hook instead.'
-    );
-}

@@ -5,6 +5,11 @@ import { JsonLike } from './utils/types';
 import * as expr from './expr/expression_util';
 import { DUIFontFactory } from './font_factory';
 import { useResourceProvider } from './resource_provider';
+import { deserializeIcon } from '../components/icon_helper/icon_data_serialization';
+import { defaultTextStyle, makeTextStyle } from './utils/textstyle_util';
+import { TextStyle } from 'react-native';
+import { APIModel } from '../network/api_request/api_request';
+import { useActionExecutor } from './actions/DefaultActionExecutor';
 
 /**
  * Payload containing all necessary context for rendering UI components.
@@ -29,26 +34,17 @@ export class RenderPayload {
     /** Current entity (page or component) ID */
     readonly currentEntityId?: string;
 
-    /** Resource provider for accessing colors, fonts, etc. */
-    private readonly resourceProvider?: ReturnType<typeof useResourceProvider>;
-
-    /** Action executor for handling user interactions */
-    private readonly actionExecutor?: any;
-
     constructor(options: {
         context: any;
         scopeContext: ScopeContext;
         widgetHierarchy?: string[];
         currentEntityId?: string;
-        resourceProvider?: ReturnType<typeof useResourceProvider>;
         actionExecutor?: any;
     }) {
         this.context = options.context;
         this.scopeContext = options.scopeContext;
         this.widgetHierarchy = options.widgetHierarchy ?? [];
         this.currentEntityId = options.currentEntityId;
-        this.resourceProvider = options.resourceProvider;
-        this.actionExecutor = options.actionExecutor;
     }
 
     /**
@@ -60,8 +56,8 @@ export class RenderPayload {
     getIcon(map?: JsonLike | null): any | null {
         if (map == null) return null;
 
-        // TODO: Yet to be implemented
-        return null;
+        // TODO: Implement icon retrieval logic
+        return deserializeIcon(map as any);
     }
 
     /**
@@ -71,7 +67,7 @@ export class RenderPayload {
      * @returns Color value or null
      */
     getColor(key: string): string | null {
-        return this.resourceProvider?.getColor?.(key) ?? null;
+        return useResourceProvider()?.getColor(key) ?? null;
     }
 
     /**
@@ -80,8 +76,8 @@ export class RenderPayload {
      * @param id - API model ID
      * @returns API model or null
      */
-    getApiModel(id: string): any | null {
-        return this.resourceProvider?.apiModels?.[id] ?? null;
+    getApiModel(id: string): APIModel | null {
+        return useResourceProvider()?.apiModels?.[id] ?? null;
     }
 
     /**
@@ -90,7 +86,7 @@ export class RenderPayload {
      * @returns Font factory instance or null
      */
     getFontFactory(): DUIFontFactory | null {
-        return this.resourceProvider?.getFontFactory?.() ?? null;
+        return useResourceProvider()?.getFontFactory() ?? null;
     }
 
     /**
@@ -100,12 +96,13 @@ export class RenderPayload {
      * @param fallback - Fallback style if parsing fails
      * @returns TextStyle object or null
      */
-    getTextStyle(json?: JsonLike | null, fallback?: any): any | null {
-        if (!json) return fallback ?? null;
-
-        // TODO: Implement makeTextStyle utility
-        // For now, return fallback or null
-        return fallback ?? null;
+    getTextStyle(json?: JsonLike | null, fallback: TextStyle = defaultTextStyle): TextStyle | null {
+        return makeTextStyle(
+            json ?? null,
+            useResourceProvider(),
+            this.eval.bind(this),
+            fallback
+        );
     }
 
     /**
@@ -130,11 +127,13 @@ export class RenderPayload {
             triggerType?: string;
         }
     ): Promise<any> {
-        if (actionFlow == null || !this.actionExecutor) {
+        if (actionFlow == null) {
             return null;
         }
 
-        return this.actionExecutor.execute(
+        const actionExecutor = useActionExecutor();
+
+        return actionExecutor.execute(
             this.context,
             actionFlow,
             this._chainExprContext(options?.scopeContext),
@@ -315,16 +314,12 @@ export class RenderPayload {
         scopeContext?: ScopeContext;
         widgetHierarchy?: string[];
         currentEntityId?: string;
-        resourceProvider?: ReturnType<typeof useResourceProvider>;
-        actionExecutor?: any;
     }): RenderPayload {
         return new RenderPayload({
             context: options?.context ?? this.context,
             scopeContext: options?.scopeContext ?? this.scopeContext,
             widgetHierarchy: options?.widgetHierarchy ?? this.widgetHierarchy,
             currentEntityId: options?.currentEntityId ?? this.currentEntityId,
-            resourceProvider: options?.resourceProvider ?? this.resourceProvider,
-            actionExecutor: options?.actionExecutor ?? this.actionExecutor,
         });
     }
 

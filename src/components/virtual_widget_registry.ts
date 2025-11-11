@@ -3,7 +3,7 @@ import { VWNodeData, VWData, VWStateData, VWComponentData } from '../framework/m
 import { VWText } from './widgets/text';
 import { RenderPayload } from '../framework/render_payload';
 import { TextPropsClass } from './widget_props/text_props';
-import { textBuilder, createChildGroups } from './builders';
+import { textBuilder, createChildGroups, scaffoldBuilder } from './builders';
 import { VirtualStateContainerWidget } from './base/VirtualStateContainerWidget';
 import { VirtualBuilderWidget } from './base/VirtualBuilderWidget';
 import { JsonLike } from '../framework/utils/types';
@@ -103,12 +103,14 @@ export interface VirtualWidgetRegistry {
  */
 export class DefaultVirtualWidgetRegistry implements VirtualWidgetRegistry {
     private componentBuilder: ComponentBuilder;
+
     private builders: Map<string, VirtualWidgetBuilder>;
 
     constructor(options: { componentBuilder: ComponentBuilder }) {
         this.componentBuilder = options.componentBuilder;
         this.builders = new Map<string, VirtualWidgetBuilder>([
             ['digia/text', textBuilder as VirtualWidgetBuilder],
+            ['fw/scaffold', scaffoldBuilder as VirtualWidgetBuilder],
         ]);
     }
 
@@ -187,7 +189,7 @@ export class DefaultVirtualWidgetRegistry implements VirtualWidgetRegistry {
     ): void {
         this.builders.set(type, (data, parent, registry) => {
             const props = fromJsonT(data.props.value);
-            const childGroups = createChildGroups(data.childGroups, parent);
+            const childGroups = createChildGroups(data.childGroups, parent, this);
             return builder(props, childGroups);
         });
     }
@@ -200,7 +202,7 @@ export class DefaultVirtualWidgetRegistry implements VirtualWidgetRegistry {
         ) => VirtualWidget
     ): void {
         this.builders.set(type, (data, parent, registry) => {
-            const childGroups = createChildGroups(data.childGroups, parent);
+            const childGroups = createChildGroups(data.childGroups, parent, this);
             return builder(data.props.value, childGroups);
         });
     }
@@ -212,13 +214,13 @@ export class DefaultVirtualWidgetRegistry implements VirtualWidgetRegistry {
 
 /**
  * Static registry for virtual widget types (deprecated, use DefaultVirtualWidgetRegistry).
- * 
+ *
  * Maps widget type strings (from server) to factory functions that create
  * the appropriate VirtualWidget instances. Similar to Flutter's widget registry
  * but with a factory pattern for TypeScript.
- * 
- * @deprecated Use DefaultVirtualWidgetRegistry for instance-based registries with proper lifecycle management.
- * 
+ *
+ *  Use DefaultVirtualWidgetRegistry for instance-based registries with proper lifecycle management.
+ *
  * @example
  * ```typescript
  * // Register a custom widget
@@ -230,84 +232,85 @@ export class DefaultVirtualWidgetRegistry implements VirtualWidgetRegistry {
  *     refName: data.refName
  *   });
  * });
- * 
+ *
  * // Create widget from data
  * const nodeData = VWNodeData.fromJson(jsonData);
  * const widget = VirtualWidgetRegistry.create(nodeData);
  * ```
  */
-export class VirtualWidgetRegistry {
-    private static factories = new Map<string, VirtualWidgetBuilder>([
-        ['digia/text', textBuilder],
-    ]);
+// export class VirtualWidgetRegistry {
+//     private static factories = new Map<string, VirtualWidgetBuilder>([
+//         ['digia/text', textBuilder],
+//         ['fw/scaffold', scaffoldBuilder],
+//     ]);
 
-    /**
-     * Register a widget factory for a specific type.
-     * 
-     * @param type - The widget type string (e.g., 'text', 'button', 'container')
-     * @param factory - Factory function to create the widget instance
-     */
-    static register(type: string, factory: VirtualWidgetBuilder): void {
-        this.factories.set(type.toLowerCase(), factory);
-    }
+//     /**
+//      * Register a widget factory for a specific type.
+//      * 
+//      * @param type - The widget type string (e.g., 'text', 'button', 'container')
+//      * @param factory - Factory function to create the widget instance
+//      */
+//     static register(type: string, factory: VirtualWidgetBuilder): void {
+//         this.factories.set(type.toLowerCase(), factory);
+//     }
 
-    /**
-     * Create a virtual widget instance from VWNodeData.
-     * 
-     * @param data - The widget node data from JSON
-     * @param parent - Optional parent widget
-     * @returns The created VirtualWidget instance
-     * @throws Error if the widget type is not registered
-     */
-    static create(data: VWNodeData, parent?: VirtualWidget): VirtualWidget {
-        const type = data.type.toLowerCase();
-        const factory = this.factories.get(type);
+//     /**
+//      * Create a virtual widget instance from VWNodeData.
+//      * 
+//      * @param data - The widget node data from JSON
+//      * @param parent - Optional parent widget
+//      * @returns The created VirtualWidget instance
+//      * @throws Error if the widget type is not registered
+//      */
+//     static create(data: VWNodeData, parent?: VirtualWidget): VirtualWidget {
+//         const type = data.type.toLowerCase();
+//         const factory = this.factories.get(type);
 
-        if (!factory) {
-            throw new Error(
-                `Widget type '${data.type}' is not registered. ` +
-                `Available types: ${Array.from(this.factories.keys()).join(', ')}`
-            );
-        }
+//         if (!factory) {
+//             throw new Error(
+//                 `Widget type '${data.type}' is not registered. ` +
+//                 `Available types: ${Array.from(this.factories.keys()).join(', ')}`
+//             );
+//         }
 
-        // Pass parent, then undefined for registry (not used in static context)
-        return factory(data, parent, undefined as any);
-    }
+//         // Pass parent, then undefined for registry (not used in static context)
+//         return factory(data, parent, undefined as any);
+//     }
 
-    /**
-     * Check if a widget type is registered.
-     * 
-     * @param type - The widget type string to check
-     * @returns true if the type is registered, false otherwise
-     */
-    static has(type: string): boolean {
-        return this.factories.has(type.toLowerCase());
-    }
+//     /**
+//      * Check if a widget type is registered.
+//      * 
+//      * @param type - The widget type string to check
+//      * @returns true if the type is registered, false otherwise
+//      */
+//     static has(type: string): boolean {
+//         return this.factories.has(type.toLowerCase());
+//     }
 
-    /**
-     * Get all registered widget types.
-     * 
-     * @returns Array of registered widget type strings
-     */
-    static getTypes(): string[] {
-        return Array.from(this.factories.keys());
-    }
+//     /**
+//      * Get all registered widget types.
+//      * 
+//      * @returns Array of registered widget type strings
+//      */
+//     static getTypes(): string[] {
+//         return Array.from(this.factories.keys());
+//     }
 
-    /**
-     * Unregister a widget type.
-     * 
-     * @param type - The widget type to remove
-     * @returns true if the type was removed, false if it wasn't registered
-     */
-    static unregister(type: string): boolean {
-        return this.factories.delete(type.toLowerCase());
-    }
+//     /**
+//      * Unregister a widget type.
+//      * 
+//      * @param type - The widget type to remove
+//      * @returns true if the type was removed, false if it wasn't registered
+//      */
+//     static unregister(type: string): boolean {
+//         return this.factories.delete(type.toLowerCase());
+//     }
 
-    /**
-     * Clear all registered widget factories.
-     */
-    static clear(): void {
-        this.factories.clear();
-    }
-}
+//     /**
+//      * Clear all registered widget factories.
+//      */
+//     static clear(): void {
+//         this.factories.clear();
+//     }
+// }
 

@@ -35,7 +35,7 @@ export interface ResourceProviderProps {
 /**
  * Internal context value.
  */
-interface ResourceContextValue extends ResourceProviderProps {
+export interface ResourceContextValue extends ResourceProviderProps {
     /** Get color for current color scheme */
     getColor: (key: string) => string | null;
 
@@ -86,55 +86,55 @@ export const ResourceProvider: React.FC<
     darkColors = {},
     navigatorKey,
 }) => {
-    const colorScheme = useColorScheme();
+        const colorScheme = useColorScheme();
 
-    const contextValue = useMemo<ResourceContextValue>(
-        () => ({
-            icons,
-            images,
-            textStyles,
-            fontFactory,
-            apiModels,
-            colors,
-            darkColors,
-            navigatorKey,
+        const contextValue = useMemo<ResourceContextValue>(
+            () => ({
+                icons,
+                images,
+                textStyles,
+                fontFactory,
+                apiModels,
+                colors,
+                darkColors,
+                navigatorKey,
 
-            getColor: (key: string): string | null => {
-                const colorMap = colorScheme === 'dark' ? darkColors : colors;
-                return colorMap[key] ?? ColorUtil.fromString(key);
-            },
+                getColor: (key: string): string | null => {
+                    const colorMap = colorScheme === 'dark' ? darkColors : colors;
+                    return colorMap[key] ?? ColorUtil.fromString(key);
+                },
 
-            getFontFactory: (): DUIFontFactory | null => {
-                return fontFactory;
-            },
+                getFontFactory: (): DUIFontFactory | null => {
+                    return fontFactory;
+                },
 
-            getFontFromToken: (token: string): TextStyle | null => {
-                return textStyles[token] ?? null;
-            },
+                getFontFromToken: (token: string): TextStyle | null => {
+                    return textStyles[token] ?? null;
+                },
 
-            getImageProvider: (key: string): any | null => {
-                return images[key] ?? null;
-            },
-        }),
-        [
-            icons,
-            images,
-            textStyles,
-            fontFactory,
-            apiModels,
-            colors,
-            darkColors,
-            navigatorKey,
-            colorScheme,
-        ]
-    );
+                getImageProvider: (key: string): any | null => {
+                    return images[key] ?? null;
+                },
+            }),
+            [
+                icons,
+                images,
+                textStyles,
+                fontFactory,
+                apiModels,
+                colors,
+                darkColors,
+                navigatorKey,
+                colorScheme,
+            ]
+        );
 
-    return (
-        <ResourceContext.Provider value={contextValue}>
-            {children}
-        </ResourceContext.Provider>
-    );
-};
+        return (
+            <ResourceContext.Provider value={contextValue}>
+                {children}
+            </ResourceContext.Provider>
+        );
+    };
 
 /**
  * Hook to access resource provider.
