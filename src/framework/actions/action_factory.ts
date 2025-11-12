@@ -3,6 +3,7 @@ import { as$ } from '../utils/functional_utils';
 import { JsonLike } from '../utils/types';
 import { Action, ActionType, actionTypeFromString } from './base/action';
 import { NavigateBackAction } from './navigateback/action';
+import { NavigateToPageAction } from './navigateToPage/action';
 
 /**
  * Factory class for creating Action instances from JSON data.
@@ -47,9 +48,9 @@ export class ActionFactory {
             //     action = SetStateAction.fromJson(actionData);
             //     break;
 
-            // case ActionType.NavigateToPage:
-            //     action = NavigateToPageAction.fromJson(actionData);
-            //     break;
+            case ActionType.NavigateToPage:
+                action = NavigateToPageAction.fromJson(actionData);
+                break;
 
             case ActionType.NavigateBack:
                 action = NavigateBackAction.fromJson(actionData);

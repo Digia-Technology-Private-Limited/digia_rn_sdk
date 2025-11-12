@@ -1,6 +1,6 @@
 import { ScopeContext } from '../expr/scope_context';
 import { JsonLike } from '../utils/types';
-import { ActionExecutionContext } from './base/processor';
+import { ActionContext } from './base/processor';
 import { ActionProcessorFactory, ActionProcessorDependencies } from './action_processor_factory';
 import { Action, ActionId } from './base/action';
 import { ActionFlow } from './base/action_flow';
@@ -50,7 +50,7 @@ export class ActionExecutor {
      * ```
      */
     async execute(
-        context: ActionExecutionContext,
+        context: ActionContext,
         actionFlow: ActionFlow,
         scopeContext?: ScopeContext | null,
         options?: {

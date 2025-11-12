@@ -3,7 +3,8 @@ import { VWNodeData, VWData, VWStateData, VWComponentData } from '../framework/m
 import { VWText } from './widgets/text';
 import { RenderPayload } from '../framework/render_payload';
 import { TextPropsClass } from './widget_props/text_props';
-import { textBuilder, createChildGroups, scaffoldBuilder } from './builders';
+import { textBuilder, createChildGroups } from './builders';
+import { scaffoldBuilder, rowBuilder, columnBuilder, iconBuilder, imageBuilder } from './builders';
 import { VirtualStateContainerWidget } from './base/VirtualStateContainerWidget';
 import { VirtualBuilderWidget } from './base/VirtualBuilderWidget';
 import { JsonLike } from '../framework/utils/types';
@@ -111,6 +112,10 @@ export class DefaultVirtualWidgetRegistry implements VirtualWidgetRegistry {
         this.builders = new Map<string, VirtualWidgetBuilder>([
             ['digia/text', textBuilder as VirtualWidgetBuilder],
             ['fw/scaffold', scaffoldBuilder as VirtualWidgetBuilder],
+            ['digia/column', columnBuilder as VirtualWidgetBuilder],
+            ['digia/row', rowBuilder as VirtualWidgetBuilder],
+            ['digia/icon', iconBuilder as VirtualWidgetBuilder],
+            ['digia/image', imageBuilder as VirtualWidgetBuilder],
         ]);
     }
 

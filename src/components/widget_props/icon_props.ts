@@ -23,11 +23,11 @@ export class IconProps {
         this.color = color;
     }
 
-    static fromJson(json: JsonLike | null): IconProps | null {
-        if (json == null) return null;
+    static fromJson(json: JsonLike | null): IconProps {
+        if (json == null) return IconProps.empty();
 
         const iconData = as$<JsonLike>(json['iconData']);
-        if (iconData == null) return null;
+        if (iconData == null) return IconProps.empty();
 
         return new IconProps({
             iconData: iconData,

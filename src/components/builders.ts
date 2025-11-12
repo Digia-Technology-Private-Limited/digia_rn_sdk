@@ -5,6 +5,10 @@ import { TextPropsClass } from './widget_props/text_props';
 import { VWText } from './widgets/text';
 import { ScaffoldProps } from './widget_props/scafold_props';
 import { VWScaffold } from './widgets/scaffold';
+import { VWFlex } from './widgets/Flex';
+import { VWIcon } from './widgets/icon';
+import { IconProps } from './widget_props/icon_props';
+import { VWImage } from './widgets/Image';
 
 /**
  * Create child groups from VWData, converting each to VirtualWidget instances.
@@ -96,6 +100,70 @@ export function scaffoldBuilder(
         parentProps: data.parentProps,
         parent: parent,
         childGroups: createChildGroups(data.childGroups, parent, registry),
+        refName: data.refName,
+    });
+}
+
+export function flexBuilder(
+    direction: 'horizontal' | 'vertical',
+    data: VWNodeData,
+    parent: VirtualWidget | undefined,
+    registry: VirtualWidgetRegistry,
+) {
+    return new VWFlex({
+        direction: direction,
+        props: data.props,
+        commonProps: data.commonProps,
+        parent: parent,
+        childGroups: createChildGroups(data.childGroups, parent, registry),
+        refName: data.refName,
+    });
+}
+
+
+export function columnBuilder(
+    data: VWNodeData,
+    parent: VirtualWidget | undefined,
+    registry: VirtualWidgetRegistry,
+) {
+    return flexBuilder('vertical', data, parent, registry);
+}
+
+export function rowBuilder(
+    data: VWNodeData,
+    parent: VirtualWidget | undefined,
+    registry: VirtualWidgetRegistry,
+) {
+    return flexBuilder('horizontal', data, parent, registry);
+}
+
+export function iconBuilder(
+    data: VWNodeData,
+    parent: VirtualWidget | undefined,
+    registry: VirtualWidgetRegistry,
+) {
+
+
+    return new VWIcon({
+        props: IconProps.fromJson(data.props.value),
+        commonProps: data.commonProps,
+        parentProps: data.parentProps,
+        parent: parent,
+        refName: data.refName,
+    });
+}
+
+
+export function imageBuilder(
+    data: VWNodeData,
+    parent: VirtualWidget | undefined,
+    registry: VirtualWidgetRegistry,
+) {
+    return new VWImage({
+        props: data.props,
+        commonProps: data.commonProps,
+        parentProps: data.parentProps,
+        parent: parent,
         refName: data.refName,
     });
 }

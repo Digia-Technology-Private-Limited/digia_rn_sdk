@@ -11,9 +11,11 @@ import { StatefulScopeWidget, StateType } from '../state/state_scope_widget';
 import { DataTypeCreator } from '../../framework/data_type/data_type_creator';
 import { ActionFlow } from '../../framework/actions/base/action_flow';
 import { RenderPayload } from '../../framework/render_payload';
+import { useResourceProvider } from '../../framework/resource_provider';
 import { ResourceProvider } from '../../framework/resource_provider';
 import { ActionExecutor } from '../../framework/actions/action_executor';
 import { JsonLike } from '../../framework/utils/types';
+import { useActionExecutor } from '../../framework';
 
 /**
  * Props for DUIPage component.
@@ -283,19 +285,25 @@ const DUIPageContent: React.FC<DUIPageContentProps> = ({
 
     const virtualWidget = registry.createWidget(rootNode, undefined);
 
-    // Create action executor
-    const actionExecutor = new ActionExecutor({
-        viewBuilder: undefined, // TODO: Implement view builder
-        bindingRegistry: undefined, // TODO: Implement binding registry
-    });
+    // Obtain resources (navigatorKey) and action executor via hooks
+    const resources = useResourceProvider();
+    const executor = useActionExecutor();
+
+    // Create execution context with navigation reference
+    // Use ResourceProvider's navigatorKey if available, otherwise use the global navigatorRef
+    const executionContext = {
+        navigation: resources?.navigatorKey ?? undefined,
+        // expose executeActionFlow if executor wants to be reachable from processors
+        executeActionFlow: executor ? executor.execute.bind(executor) : undefined,
+    };
 
     return virtualWidget.toWidget(
         new RenderPayload({
-            context: null, // React context, if needed
+            context: executionContext,
             scopeContext: scope,
             currentEntityId: pageId,
             widgetHierarchy: [],
-            actionExecutor,
+            actionExecutor: executor,
         })
     );
 };

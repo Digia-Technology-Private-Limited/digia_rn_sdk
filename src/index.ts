@@ -27,6 +27,7 @@ export * from './app';
 
 // UI Factory
 export { DUIFactory, getDUIFactory } from './components/ui_factory';
+export { DUIPageScreen } from './components/DUIPageScreen';
 
 // Configuration
 export * from './dui_config';
@@ -60,6 +61,21 @@ export {
 // Data types
 export * from './framework/data_type/data_type';
 export { Variable } from './framework/data_type/variable';
+
+// Navigation - Export all navigation utilities
+export {
+  navigatorRef,
+  getNavigator,
+  navigate,
+  push,
+  goBack,
+  canGoBack,
+  reset,
+  replace,
+  popUntil,
+  getCurrentRouteName,
+  getState,
+} from './framework/navigation/ref';
 
 // Framework types
 

@@ -9,10 +9,11 @@ import { StateContext } from '../state/state_context';
 import { StatefulScopeWidget, StateType } from '../state/state_scope_widget';
 import { DataTypeCreator } from '../../framework/data_type/data_type_creator';
 import { RenderPayload } from '../../framework/render_payload';
-import { ResourceProvider } from '../../framework/resource_provider';
+import { ResourceProvider, useResourceProvider } from '../../framework/resource_provider';
 import { JsonLike } from '../../framework/utils/types';
 import { APIModel } from '../../network/api_request/api_request';
 import { DUIComponentDefinition } from '../../framework/models/component_definition';
+import { useActionExecutor } from '../../framework';
 
 /**
  * Props for DUIComponent component.
@@ -194,13 +195,23 @@ const DUIComponentContent: React.FC<DUIComponentContentProps> = ({
 
     const virtualWidget = registry.createWidget(rootNode, undefined);
 
+    // Obtain resources and action executor
+    const resources = useResourceProvider();
+    const executor = useActionExecutor();
+
+    // Create execution context with navigation reference
+    const executionContext = {
+        navigation: resources?.navigatorKey ?? undefined,
+        executeActionFlow: executor ? executor.execute.bind(executor) : undefined,
+    };
+
     return virtualWidget.toWidget(
         new RenderPayload({
-            context: null, // React context, if needed
+            context: executionContext,
             scopeContext: scope,
             currentEntityId: id,
             widgetHierarchy: [],
-            actionExecutor: undefined, // Action executor from context
+            actionExecutor: executor,
         })
     );
 };

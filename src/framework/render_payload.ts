@@ -9,7 +9,6 @@ import { deserializeIcon } from '../components/icon_helper/icon_data_serializati
 import { defaultTextStyle, makeTextStyle } from './utils/textstyle_util';
 import { TextStyle } from 'react-native';
 import { APIModel } from '../network/api_request/api_request';
-import { useActionExecutor } from './actions/DefaultActionExecutor';
 
 /**
  * Payload containing all necessary context for rendering UI components.
@@ -33,6 +32,8 @@ export class RenderPayload {
 
     /** Current entity (page or component) ID */
     readonly currentEntityId?: string;
+    /** Optional action executor injected at payload construction time */
+    readonly actionExecutor?: any;
 
     constructor(options: {
         context: any;
@@ -45,6 +46,7 @@ export class RenderPayload {
         this.scopeContext = options.scopeContext;
         this.widgetHierarchy = options.widgetHierarchy ?? [];
         this.currentEntityId = options.currentEntityId;
+        this.actionExecutor = options.actionExecutor;
     }
 
     /**
@@ -131,9 +133,22 @@ export class RenderPayload {
             return null;
         }
 
-        const actionExecutor = useActionExecutor();
+        // Prefer an injected actionExecutor to avoid calling React hooks from
+        // non-hook contexts (event handlers, processors, etc.). Calling hooks
+        // such as useActionExecutor() here can lead to "Invalid hook call"
+        // when executeAction is invoked outside of a React function component
+        // body. Consumers should pass an actionExecutor when creating the
+        // RenderPayload (see DUIPageContent usage).
+        const executor = this.actionExecutor ?? (this.context && (this.context.actionExecutor as any));
 
-        return actionExecutor.execute(
+        if (!executor) {
+            throw new Error(
+                'RenderPayload.executeAction requires an ActionExecutor instance on the payload. ' +
+                'Provide `actionExecutor` when creating RenderPayload to execute actions from non-hook contexts.'
+            );
+        }
+
+        return executor.execute(
             this.context,
             actionFlow,
             this._chainExprContext(options?.scopeContext),
@@ -314,12 +329,14 @@ export class RenderPayload {
         scopeContext?: ScopeContext;
         widgetHierarchy?: string[];
         currentEntityId?: string;
+        actionExecutor?: any;
     }): RenderPayload {
         return new RenderPayload({
             context: options?.context ?? this.context,
             scopeContext: options?.scopeContext ?? this.scopeContext,
             widgetHierarchy: options?.widgetHierarchy ?? this.widgetHierarchy,
             currentEntityId: options?.currentEntityId ?? this.currentEntityId,
+            actionExecutor: options?.actionExecutor ?? this.actionExecutor,
         });
     }
 

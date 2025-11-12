@@ -1,9 +1,11 @@
-import { ActionExecutionContext, ActionProcessor } from './base/processor';
+import { ActionContext, ActionProcessor } from './base/processor';
+import React from 'react';
 import { Action, ActionType } from './base/action';
 // import { SetStateProcessor } from './set_state/processor';
 // import { NavigateToPageProcessor } from './navigate_to_page/processor';
 import { NavigateBackProcessor } from './navigateback/processor';
 import { ScopeContext } from '../expr';
+import { NavigateToPageProcessor } from './navigateToPage/processor';
 
 /**
  * Dependencies required by action processors.
@@ -17,7 +19,7 @@ export interface ActionProcessorDependencies {
 
     /** Function to execute nested action flows */
     executeActionFlow?: (
-        context: ActionExecutionContext,
+        context: ActionContext,
         actionFlow: any,
         scopeContext?: ScopeContext | null,
         options?: {
@@ -66,11 +68,10 @@ export class ActionProcessorFactory {
             //     processor = new SetStateProcessor();
             //     break;
 
-            // case ActionType.NavigateToPage:
-            //     processor = new NavigateToPageProcessor(
-            //         this.dependencies.executeActionFlow
-            //     );
-            //     break;
+            case ActionType.NavigateToPage:
+                processor = new NavigateToPageProcessor(
+                );
+                break;
 
             case ActionType.NavigateBack:
                 processor = new NavigateBackProcessor();
@@ -82,6 +83,6 @@ export class ActionProcessorFactory {
                 );
         }
 
-        return processor;
+        return processor as ActionProcessor;
     }
 }

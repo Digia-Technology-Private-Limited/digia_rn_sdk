@@ -1,5 +1,7 @@
 import React from 'react';
 import { Modal, Platform } from 'react-native';
+import { getNavigator } from '../navigation/ref';
+import { StackActions } from '@react-navigation/native';
 
 /**
  * Options for presenting a dialog.
@@ -196,6 +198,7 @@ export function presentBottomSheet<T = any>(
 export class NavigatorHelper {
     /**
      * Push a new screen onto the navigation stack.
+     * Works like Flutter's Navigator.push() - no need to pre-define screens.
      * 
      * @param options - Navigation options
      * @returns Promise that resolves when navigation completes
@@ -205,14 +208,6 @@ export class NavigatorHelper {
      * await NavigatorHelper.push({
      *   screenName: 'Profile',
      *   params: { userId: '123' },
-     *   navigation
-     * });
-     * 
-     * // With route removal
-     * await NavigatorHelper.push({
-     *   screenName: 'Home',
-     *   removeRoutesUntilPredicate: (route) => route.name === 'Root',
-     *   navigation
      * });
      * ```
      */
@@ -226,14 +221,22 @@ export class NavigatorHelper {
             removeRoutesUntilPredicate,
         } = options;
 
-        if (!navigation) {
-            console.warn('NavigatorHelper.push requires navigation reference');
-            return;
+        // Use provided navigation or fall back to global navigatorRef
+        let nav = navigation ?? getNavigator();
+
+        if (!nav) {
+            console.error(
+                'NavigatorHelper.push: navigation reference not available. ' +
+                'Make sure NavigationContainer is mounted with ref={navigatorRef}.'
+            );
+            throw new Error('Navigation reference not available');
         }
 
+        // Flutter-like navigation: Always push to "Page" screen with pageId
+        // This allows dynamic page rendering without registering all routes
         if (removeRoutesUntilPredicate) {
             // Remove routes until predicate is met, then push
-            const state = navigation.getState();
+            const state = nav.getState();
             const routes = state.routes;
 
             // Find the index where we should reset to
@@ -248,27 +251,27 @@ export class NavigatorHelper {
             if (resetIndex >= 0) {
                 // Reset to that route, then push new screen
                 const resetRoutes = routes.slice(0, resetIndex + 1);
-                navigation.reset({
+                nav.reset({
                     index: resetRoutes.length,
                     routes: [
                         ...resetRoutes,
-                        { name: screenName, params },
+                        { name: 'Page', params: { pageId: screenName, params } },
                     ],
                 });
             } else {
                 // Just push if predicate never matched
-                navigation.navigate(screenName, params);
+                nav.dispatch(StackActions.push('Page', { pageId: screenName, params }));
             }
         } else {
-            // Simple push
-            navigation.navigate(screenName, params);
+            // Simple push - navigate to Page with pageId
+            nav.dispatch(StackActions.push('Page', { pageId: screenName, params }));
         }
     }
 
     /**
      * Pop the current screen from the navigation stack.
      * 
-     * @param navigation - Navigation reference
+     * @param navigation - Navigation reference (optional, uses global ref if not provided)
      * @returns True if navigation can go back, false otherwise
      * 
      * @example
@@ -277,13 +280,17 @@ export class NavigatorHelper {
      * ```
      */
     static pop(navigation?: any): boolean {
-        if (!navigation) {
-            console.warn('NavigatorHelper.pop requires navigation reference');
+        const nav = navigation ?? getNavigator();
+
+        if (!nav) {
+            console.warn(
+                'NavigatorHelper.pop: navigation reference not available.'
+            );
             return false;
         }
 
-        if (navigation.canGoBack()) {
-            navigation.goBack();
+        if (nav.canGoBack()) {
+            nav.goBack();
             return true;
         }
 
@@ -292,8 +299,9 @@ export class NavigatorHelper {
 
     /**
      * Pop until a predicate is met.
+     * Works like Flutter's Navigator.popUntil()
      * 
-     * @param navigation - Navigation reference
+     * @param navigation - Navigation reference (optional, uses global ref if not provided)
      * @param predicate - Function to test each route
      * @returns True if successful, false otherwise
      * 
@@ -309,12 +317,14 @@ export class NavigatorHelper {
         navigation: any,
         predicate: (route: any) => boolean
     ): boolean {
-        if (!navigation) {
-            console.warn('NavigatorHelper.popUntil requires navigation reference');
+        const nav = navigation ?? getNavigator();
+
+        if (!nav) {
+            console.warn('NavigatorHelper.popUntil: navigation reference not available');
             return false;
         }
 
-        const state = navigation.getState();
+        const state = nav.getState();
         const routes = state.routes;
 
         // Find the target route
@@ -329,7 +339,7 @@ export class NavigatorHelper {
         if (targetIndex >= 0 && targetIndex < routes.length - 1) {
             // Pop to that route
             const targetRoutes = routes.slice(0, targetIndex + 1);
-            navigation.reset({
+            nav.reset({
                 index: targetRoutes.length - 1,
                 routes: targetRoutes,
             });
@@ -341,8 +351,9 @@ export class NavigatorHelper {
 
     /**
      * Replace the current route with a new one.
+     * Works like Flutter's Navigator.pushReplacement()
      * 
-     * @param navigation - Navigation reference
+     * @param navigation - Navigation reference (optional, uses global ref if not provided)
      * @param screenName - Screen name to navigate to
      * @param params - Parameters to pass
      * 
@@ -356,48 +367,55 @@ export class NavigatorHelper {
         screenName: string,
         params?: any
     ): void {
-        if (!navigation) {
-            console.warn('NavigatorHelper.replace requires navigation reference');
+        const nav = navigation ?? getNavigator();
+
+        if (!nav) {
+            console.warn('NavigatorHelper.replace: navigation reference not available');
             return;
         }
 
-        if (navigation.replace) {
-            navigation.replace(screenName, params);
+        // Navigate to Page screen with replace
+        if ((nav as any).replace) {
+            (nav as any).replace('Page', { pageId: screenName, params });
         } else {
             // Fallback: pop then push
-            if (navigation.canGoBack()) {
-                navigation.goBack();
+            if (nav.canGoBack()) {
+                nav.goBack();
             }
-            navigation.navigate(screenName, params);
+            nav.navigate('Page' as never, { pageId: screenName, params } as never);
         }
     }
 
     /**
      * Check if the navigator can go back.
      * 
-     * @param navigation - Navigation reference
+     * @param navigation - Navigation reference (optional, uses global ref if not provided)
      * @returns True if can go back, false otherwise
      */
     static canGoBack(navigation?: any): boolean {
-        if (!navigation) {
+        const nav = navigation ?? getNavigator();
+
+        if (!nav) {
             return false;
         }
 
-        return navigation.canGoBack?.() ?? false;
+        return nav.canGoBack?.() ?? false;
     }
 
     /**
      * Get the current route name.
      * 
-     * @param navigation - Navigation reference
+     * @param navigation - Navigation reference (optional, uses global ref if not provided)
      * @returns The current route name, or null if not available
      */
     static getCurrentRoute(navigation?: any): string | null {
-        if (!navigation) {
+        const nav = navigation ?? getNavigator();
+
+        if (!nav) {
             return null;
         }
 
-        const state = navigation.getState();
+        const state = nav.getState();
         if (!state || !state.routes || state.routes.length === 0) {
             return null;
         }

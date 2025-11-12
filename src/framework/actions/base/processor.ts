@@ -8,7 +8,7 @@ import { ScopeContext } from '../../expr/scope_context';
  * flexible context object that can contain navigation, state, and other
  * runtime information.
  */
-export interface ActionExecutionContext {
+export interface ActionContext {
     /** Navigation object for screen transitions */
     navigation?: any;
 
@@ -49,7 +49,7 @@ export interface ActionExecutionContext {
  */
 export abstract class ActionProcessor<T extends Action = Action> {
     /** Execution context set by the factory */
-    executionContext?: ActionExecutionContext;
+    executionContext?: ActionContext;
 
     /**
      * Executes the action with the given context.
@@ -61,7 +61,7 @@ export abstract class ActionProcessor<T extends Action = Action> {
      * @returns A promise that resolves to the action result (or null)
      */
     abstract execute(
-        context: ActionExecutionContext,
+        context: ActionContext,
         action: T,
         scopeContext?: ScopeContext | null,
         options?: {

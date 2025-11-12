@@ -1,7 +1,9 @@
 import { ScopeContext } from '../../expr/scope_context';
-import { ActionProcessor, ActionExecutionContext } from '../base/processor';
+import { ActionProcessor, ActionContext } from '../base/processor';
 import { NavigateBackAction } from './action';
 import { ActionId } from '../base/action';
+import { NavigatorHelper } from '../../utils/navigation_util';
+import { useNavigationContainerRef } from '@react-navigation/native';
 
 /**
  * Processor for NavigateBackAction.
@@ -11,7 +13,7 @@ import { ActionId } from '../base/action';
  */
 export class NavigateBackProcessor extends ActionProcessor<NavigateBackAction> {
     async execute(
-        context: ActionExecutionContext,
+        context: ActionContext,
         action: NavigateBackAction,
         scopeContext?: ScopeContext | null,
         options?: {
@@ -25,25 +27,21 @@ export class NavigateBackProcessor extends ActionProcessor<NavigateBackAction> {
         };
 
         let navigationResult: any;
-
         try {
-            const { navigation } = context;
-
-            if (!navigation) {
-                throw new Error('Navigation object not found in execution context');
-            }
+            const navigation = (context as any)?.navigation;
 
             if (maybe) {
                 // Check if can go back before attempting
-                if (navigation.canGoBack && navigation.canGoBack()) {
-                    navigation.goBack();
+                const canGoBack = NavigatorHelper.canGoBack(navigation);
+                if (canGoBack) {
+                    NavigatorHelper.pop(navigation);
                     navigationResult = true;
                 } else {
                     navigationResult = false;
                 }
             } else {
                 // Force navigation back
-                navigation.goBack();
+                NavigatorHelper.pop(navigation);
                 navigationResult = null;
             }
 
