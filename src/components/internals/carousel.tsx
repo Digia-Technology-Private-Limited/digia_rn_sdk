@@ -59,144 +59,17 @@ type InternalCarouselProps = {
 
 
 
-
-const { width: screenWidth } = Dimensions.get("window");
-
-// export default function InternalCarousel(props: InternalCarouselProps) {
-//     const {
-//         itemBuilder,
-//         children = [],
-//         itemCount = 0,
-//         width,
-//         height,
-//         direction = "horizontal",
-//         aspectRatio = 0.25,
-//         initialPage = 0,
-//         viewportFraction = 0.8,
-//         autoPlay = false,
-//         autoPlayInterval = 1600,
-//         infiniteScroll = false,
-//         enlargeCenterPage = false,
-//         showIndicator = false,
-//         indicatorEffectType = "slide",
-//         dotWidth = 8,
-//         dotHeight = 8,
-//         spacing = 12,
-//         activeDotColor = "#3F51B5",
-//         dotColor = "#C0C0C0",
-//         onChanged,
-//     } = props;
-
-//     const dataLength = itemBuilder ? itemCount : children.length;
-
-//     const carouselWidth = width ?? screenWidth;
-//     const carouselHeight =
-//         height ?? carouselWidth * aspectRatio;
-
-//     const progressValue = useSharedValue(0);
-//     const [activeIndex, setActiveIndex] = useState(0);
-
-//     const itemWidth = useMemo(() => {
-//         return carouselWidth * viewportFraction;
-//     }, [carouselWidth, viewportFraction]);
-
-//     const carouselRef = useRef<any>(null);
-
-//     /** Render item */
-//     const renderItem = useCallback(
-//         ({ index }: any) => {
-//             const node = itemBuilder ? itemBuilder({ index }) : children[index];
-//             return (
-//                 <View style={{ width: itemWidth, alignItems: "center", justifyContent: "center" }}>
-//                     {node}
-//                 </View>
-//             );
-//         },
-//         [itemBuilder, children, itemWidth]
-//     );
-
-//     /** Snap handler */
-//     const handleSnap = useCallback(
-//         (i: number) => {
-//             setActiveIndex(i);
-//             onChanged?.(i);
-//         },
-//         [onChanged]
-//     );
-
-//     /** Indicator Component */
-//     const Indicator = () => {
-//         if (!showIndicator || dataLength <= 1) return null;
-
-//         const commonProps = {
-//             data: Array.from({ length: dataLength }),
-//             scrollX: progressValue,
-//             dotSize: dotWidth,
-//             dotScale: 1.4,
-//             inActiveDotOpacity: 0.4,
-//             activeDotColor,
-//             inActiveDotColor: dotColor,
-//             containerStyle: { marginTop: 12 },
-//             spacing,
-//         };
-
-//         if (indicatorEffectType === "scale") {
-//             // commonProps.data is unknown[]; the pagination library expects Object[] —
-//             // cast to any to satisfy typings at compile time. Runtime data is not used
-//             // beyond length, so this is safe here.
-//             return <ScalingDot {...(commonProps as any)} />;
-//         }
-
-//         // default: slide
-//         return <SlidingDot {...(commonProps as any)} />;
-//     };
-
-//     return (
-//         <View style={{ width: carouselWidth, height: carouselHeight + 40 }}>
-//             <Carousel
-//                 ref={carouselRef}
-//                 width={itemWidth}
-//                 height={carouselHeight}
-//                 data={Array.from({ length: dataLength })}
-//                 renderItem={renderItem}
-//                 defaultIndex={initialPage}
-//                 loop={infiniteScroll}
-//                 autoPlay={autoPlay}
-//                 autoPlayInterval={autoPlayInterval}
-//                 onProgressChange={(_, absoluteProgress) => {
-//                     progressValue.value = absoluteProgress;
-//                 }}
-//                 onSnapToItem={handleSnap}
-//                 style={{ alignSelf: "center" }}
-//                 vertical={direction === "vertical"}
-//                 scrollAnimationDuration={800}
-//             />
-
-//             {showIndicator && <Indicator />}
-//         </View>
-//     );
-// }
-
-const styles = StyleSheet.create({
-    indicatorContainer: {
-        alignItems: "center",
-        justifyContent: "center",
-    },
-});
-
-
-
 export default function InternalCarousel(props: InternalCarouselProps) {
     const {
         itemBuilder,
         children = [],
         itemCount = 0,
-        width,
-        height,
         direction = "horizontal",
         aspectRatio = 0.25,
-        initialPage = 0,
+        width, // can be undefined
+        height,
         viewportFraction = 0.8,
+        initialPage = 0,
         autoPlay = false,
         autoPlayInterval = 1600,
         infiniteScroll = false,
@@ -211,20 +84,30 @@ export default function InternalCarousel(props: InternalCarouselProps) {
 
     const dataLength = itemBuilder ? itemCount : children.length;
 
-    const carouselWidth = width ?? screenWidth;
-    const carouselHeight = height ?? carouselWidth * aspectRatio;
-
-    // FIX: Animated.Value for pagination dots
     const scrollX = useRef(new Animated.Value(0)).current;
-
     const [activeIndex, setActiveIndex] = useState(initialPage);
 
-    const itemWidth = useMemo(
-        () => carouselWidth * viewportFraction,
-        [carouselWidth, viewportFraction]
-    );
+    /** Real layout width (Flutter-like viewport) */
+    const [layoutWidth, setLayoutWidth] = useState<number | null>(null);
 
-    /** Update scrollX when snapping */
+    const onLayout = (e: LayoutChangeEvent) => {
+        const w = e.nativeEvent.layout.width;
+        if (layoutWidth !== w) setLayoutWidth(w);
+    };
+
+    /** Compute actual viewport (Flutter-like) */
+    const viewportWidth = width ?? layoutWidth;
+    const itemWidth = useMemo(() => {
+        return viewportWidth ? viewportWidth * viewportFraction : 0;
+    }, [viewportWidth, viewportFraction]);
+
+    const carouselHeight = useMemo(() => {
+        if (height) return height;
+        if (!viewportWidth) return 200; // temp height until layout
+        return viewportWidth * aspectRatio;
+    }, [viewportWidth, height, aspectRatio]);
+
+    /** ScrollX animation for indicator */
     useEffect(() => {
         Animated.timing(scrollX, {
             toValue: activeIndex * itemWidth,
@@ -233,70 +116,83 @@ export default function InternalCarousel(props: InternalCarouselProps) {
         }).start();
     }, [activeIndex, itemWidth]);
 
-    /** Render item */
-    const renderItem = useCallback(
-        ({ index }: { index: number }) => {
-            const node = itemBuilder ? itemBuilder({ index }) : children[index];
-            return (
-                <View style={{ width: itemWidth, alignItems: "center", justifyContent: "center" }}>
-                    {node}
-                </View>
-            );
-        },
-        [itemBuilder, children, itemWidth]
-    );
+    /** Render item like Flutter PageView.builder */
+    const renderItem = ({ index }: { index: number }) => {
+        const node = itemBuilder ? itemBuilder({ index }) : children[index];
+        return (
+            <View style={{ width: itemWidth, alignItems: "center", justifyContent: "center" }}>
+                {node}
+            </View>
+        );
+    };
 
-    /** Snap handler */
-    const handleSnap = useCallback(
-        (i: number) => {
-            setActiveIndex(i);
-            onChanged?.(i);
-        },
-        [onChanged]
-    );
+    const handleSnap = (i: number) => {
+        setActiveIndex(i);
+        onChanged?.(i);
+    };
 
-    /** Indicator Component */
+    /** Indicator */
     const Indicator = () => {
         if (!showIndicator || dataLength <= 1) return null;
 
-        const commonProps = {
+        const baseProps = {
             data: Array.from({ length: dataLength }) as Object[],
             scrollX: scrollX, // FIXED: Animated.Value
             dotSize: dotWidth,
             dotScale: 1.4,
-            inActiveDotOpacity: 0.4,
             activeDotColor,
             inActiveDotColor: dotColor,
-            containerStyle: { marginTop: 12 },
             spacing,
+            containerStyle: { marginTop: 12 },
         };
 
-        if (indicatorEffectType === "scale") {
-            return <ScalingDot {...commonProps} />;
-        }
-
-        return <SlidingDot {...commonProps} />;
+        return indicatorEffectType === "scale"
+            ? <ScalingDot {...baseProps} />
+            : <SlidingDot {...baseProps} />;
     };
 
     return (
-        <View style={{ width: carouselWidth, height: carouselHeight + 40 }}>
-            <Carousel
-                width={itemWidth}
-                height={carouselHeight}
-                data={Array.from({ length: dataLength })}
-                renderItem={renderItem}
-                defaultIndex={initialPage}
-                loop={infiniteScroll}
-                autoPlay={autoPlay}
-                autoPlayInterval={autoPlayInterval}
-                onSnapToItem={handleSnap}
-                vertical={direction === "vertical"}
-                scrollAnimationDuration={800}
-                style={{ alignSelf: "center" }}
-            />
+        <View
+            style={{
+                width: width ?? "100%",
 
-            {showIndicator && <Indicator />}
+            }}
+            onLayout={onLayout}
+        >
+            {viewportWidth && (
+                <>
+                    {/* Carousel */}
+                    <Carousel
+                        width={itemWidth}
+                        height={carouselHeight}
+                        data={Array.from({ length: dataLength })}
+                        renderItem={renderItem}
+                        defaultIndex={initialPage}
+                        loop={infiniteScroll}
+                        autoPlay={autoPlay}
+                        autoPlayInterval={autoPlayInterval}
+                        onSnapToItem={handleSnap}
+                        vertical={direction === "vertical"}
+                        scrollAnimationDuration={800}
+                        style={{ alignSelf: "center" }}
+                    />
+
+                    {/* Indicator placed directly BELOW the carousel, not overlapping */}
+                    {showIndicator && (
+                        <View
+                            style={{
+                                height: 24,
+                                justifyContent: "center",
+                                alignItems: "center",
+                                marginTop: 8,
+                            }}
+                        >
+                            <Indicator />
+                        </View>
+                    )}
+                </>
+            )}
         </View>
     );
-}
 
+}

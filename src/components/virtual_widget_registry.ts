@@ -1,6 +1,6 @@
 import { VirtualWidget } from './base/VirtualWidget';
 import { VWNodeData, VWData, VWStateData, VWComponentData } from '../framework/models/vw_data';
-import { textBuilder, createChildGroups, buttonBuilder, navigationBarBuilder, containerBuilder, carouselBuilder, futureBuilder, conditionalBuilder, conditionalItemBuilder, stackBuilder } from './builders';
+import { textBuilder, createChildGroups, buttonBuilder, navigationBarBuilder, containerBuilder, carouselBuilder, futureBuilder, conditionalBuilder, conditionalItemBuilder, stackBuilder, safeAreaBuilder } from './builders';
 import { scaffoldBuilder, rowBuilder, columnBuilder, iconBuilder, imageBuilder } from './builders';
 import { VirtualStateContainerWidget } from './base/VirtualStateContainerWidget';
 import { VirtualBuilderWidget } from './base/VirtualBuilderWidget';
@@ -127,6 +127,9 @@ export class DefaultVirtualWidgetRegistry implements VirtualWidgetRegistry {
             ],
             [
                 'digia/conditionalItem', conditionalItemBuilder as VirtualWidgetBuilder
+            ],
+            [
+                'digia/safeArea', safeAreaBuilder as VirtualWidgetBuilder
             ]
         ]);
     }

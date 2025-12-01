@@ -16,6 +16,8 @@ import VWAsyncBuilder from './widgets/AsyncBuilder';
 import { AsyncBuilderProps } from './widget_props/async_builder_props';
 import VWConditionalItem from './widgets/ConditionalItem';
 import { ConditionalItemProps } from './internals/conditional_item_props';
+import { VWSafeArea } from './widgets/SafeArea';
+import { SafeAreaProps } from './widget_props/safe_area_props';
 
 /**
  * Create child groups from VWData, converting each to VirtualWidget instances.
@@ -301,6 +303,22 @@ export function stackBuilder(
     const { VWStack } = require('./widgets/Stack');
     return new VWStack({
         props: data.props,
+        commonProps: data.commonProps,
+        parentProps: data.parentProps,
+        parent: parent,
+        childGroups: createChildGroups(data.childGroups, parent, registry),
+        refName: data.refName,
+    });
+}
+
+
+export function safeAreaBuilder(
+    data: VWNodeData,
+    parent: VirtualWidget | undefined,
+    registry: VirtualWidgetRegistry,
+) {
+    return new VWSafeArea({
+        props: SafeAreaProps.fromJson(data.props.value),
         commonProps: data.commonProps,
         parentProps: data.parentProps,
         parent: parent,

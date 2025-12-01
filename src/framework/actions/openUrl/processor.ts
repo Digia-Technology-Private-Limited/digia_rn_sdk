@@ -40,15 +40,6 @@ export class OpenUrlProcessor extends ActionProcessor<OpenUrlAction> {
         }
 
         try {
-            const safeUrl = encodeURI(trimmed);
-
-            const canOpen = await Linking.canOpenURL(
-                safeUrl
-            );
-            if (!canOpen) {
-                throw new Error(`OpenUrlAction: cannot open URL '${trimmed}'`);
-            }
-
             // If an in-app experience is requested, try using react-native-inappbrowser-reborn
             if (launchMode && (launchMode.toLowerCase() === 'inappwebview' || launchMode.toLowerCase() === 'inapp')) {
                 try {
@@ -75,7 +66,12 @@ export class OpenUrlProcessor extends ActionProcessor<OpenUrlAction> {
             }
 
             // default: open with system browser
-            await Linking.openURL(trimmed);
+            try {
+                await Linking.openURL(trimmed);
+            } catch (linkError) {
+                const errorMessage = linkError instanceof Error ? linkError.message : String(linkError);
+                throw new Error(`OpenUrlAction: failed to open URL '${trimmed}' - ${errorMessage}`);
+            }
             return null;
         } catch (e) {
             // Surface error to caller
