@@ -85,4 +85,4 @@ export * from './components/base';
 // Actions
 export * from './framework/actions';
 
-export * from '../src/components/iiiii';
+export * from './components/iiiii';

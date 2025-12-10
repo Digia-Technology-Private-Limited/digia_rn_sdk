@@ -1,7 +1,7 @@
 // TimerController - TypeScript equivalent of the Dart implementation
 // Provides a simple stream-like subscribe API and control methods.
 
-import { ExprInstance } from "@digia/expr-rn";
+import { ExprInstance } from "digia_expr";
 
 export type Subscription = {
     unsubscribe: () => void;

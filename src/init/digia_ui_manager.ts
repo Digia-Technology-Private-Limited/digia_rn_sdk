@@ -2,7 +2,7 @@ import { DigiaUI } from './digia_ui';
 import { DigiaInspector, DigiaUIHost } from '../dui_config';
 import { NetworkClient } from '../network/network_client';
 import { Variable } from '../framework/data_type/variable';
-import { ExprClassInstance, ExprClass, ExprCallableImpl, ASTNode } from '@digia/expr-rn';
+import { ExprClassInstance, ExprClass, ExprCallableImpl, ASTNode } from 'digia_expr';
 
 /**
  * Singleton manager for the DigiaUI instance.

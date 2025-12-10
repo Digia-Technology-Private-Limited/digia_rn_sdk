@@ -6,13 +6,7 @@ import {
     ImageBackground,
     FlexAlignType,
 } from 'react-native';
-import Svg, {
-    Defs,
-    LinearGradient,
-    Rect,
-    Stop,
-    RadialGradient,
-} from 'react-native-svg';
+
 import { RenderPayload } from '../../framework/render_payload';
 import { Props } from '../../framework/models/props';
 import { CommonProps } from '../../framework/models/common_props';
@@ -20,7 +14,6 @@ import { VirtualWidget } from '../base/VirtualWidget';
 import { BorderPattern, StrokeAlign } from '../../framework/utils/custon_types';
 import { BorderWithPattern } from '../../framework/utils/BorderWithPattern';
 import { VirtualStatelessWidget } from '../base/VirtualStatelessWidget';
-import { Svg as SvgBase } from 'react-native-svg';
 import { To } from '../../framework/utils/type_convertors';
 // import { LayoutProvider, useConstraints } from '../../framework/utils/react-native-constraint-system';
 

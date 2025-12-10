@@ -1,7 +1,6 @@
 import { VirtualWidget } from './base/VirtualWidget';
 import { VWNodeData, VWData, VWStateData, VWComponentData } from '../framework/models/vw_data';
-import { textBuilder, createChildGroups, buttonBuilder, navigationBarBuilder, containerBuilder, carouselBuilder, futureBuilder, conditionalBuilder, conditionalItemBuilder, stackBuilder, safeAreaBuilder } from './builders';
-import { scaffoldBuilder, rowBuilder, columnBuilder, iconBuilder, imageBuilder } from './builders';
+import { createChildGroups } from './builders';
 import { VirtualStateContainerWidget } from './base/VirtualStateContainerWidget';
 import { VirtualBuilderWidget } from './base/VirtualBuilderWidget';
 import { JsonLike } from '../framework/utils/types';
@@ -105,33 +104,10 @@ export class DefaultVirtualWidgetRegistry implements VirtualWidgetRegistry {
 
     private builders: Map<string, VirtualWidgetBuilder>;
 
-    constructor(options: { componentBuilder: ComponentBuilder }) {
+    constructor(options: { componentBuilder: ComponentBuilder, builders: Map<string, VirtualWidgetBuilder> }) {
         this.componentBuilder = options.componentBuilder;
-        this.builders = new Map<string, VirtualWidgetBuilder>([
-            ['digia/text', textBuilder as VirtualWidgetBuilder],
-            ['fw/scaffold', scaffoldBuilder as VirtualWidgetBuilder],
-            ['digia/column', columnBuilder as VirtualWidgetBuilder],
-            ['digia/row', rowBuilder as VirtualWidgetBuilder],
-            ['digia/icon', iconBuilder as VirtualWidgetBuilder],
-            ['digia/image', imageBuilder as VirtualWidgetBuilder],
-            ['digia/button', buttonBuilder as VirtualWidgetBuilder],
-            ['digia/navigationbar', navigationBarBuilder as VirtualWidgetBuilder],
-            ['digia/futureBuilder', futureBuilder as VirtualWidgetBuilder],
-            ['digia/stack', stackBuilder as VirtualWidgetBuilder],
-            ['digia/container', containerBuilder as VirtualWidgetBuilder],
-            [
-                'digia/carousel', carouselBuilder as VirtualWidgetBuilder
-            ],
-            [
-                'digia/conditionalBuilder', conditionalBuilder as VirtualWidgetBuilder
-            ],
-            [
-                'digia/conditionalItem', conditionalItemBuilder as VirtualWidgetBuilder
-            ],
-            [
-                'digia/safeArea', safeAreaBuilder as VirtualWidgetBuilder
-            ]
-        ]);
+        console.log('DefaultVirtualWidgetRegistry initialized with builders:', options.builders);
+        this.builders = options.builders;
     }
 
     createWidget(data: VWData, parent?: VirtualWidget): VirtualWidget {

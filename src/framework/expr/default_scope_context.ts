@@ -1,4 +1,4 @@
-import { ExprContext } from '@digia/expr-rn';
+import { ExprContext } from 'digia_expr';
 import { ScopeContext } from './scope_context';
 
 /**

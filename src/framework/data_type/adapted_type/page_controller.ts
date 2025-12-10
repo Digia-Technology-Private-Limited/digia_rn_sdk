@@ -7,7 +7,7 @@
  * used standalone by SDK consumers.
  */
 
-import { ExprInstance } from "@digia/expr-rn";
+import { ExprInstance } from "digia_expr";
 
 export class AdaptedPageController implements ExprInstance {
     // Current page index (may be fractional depending on scroll)

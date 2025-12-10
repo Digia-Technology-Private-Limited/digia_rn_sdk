@@ -2,7 +2,7 @@ import React from 'react';
 import { DigiaUIManager } from '../init/digia_ui_manager';
 import { DUIConfig } from '../config/model';
 import { IconData, ImageProvider, UIResources } from './ui_resources';
-import { DefaultVirtualWidgetRegistry, VirtualWidgetRegistry } from './virtual_widget_registry';
+import { DefaultVirtualWidgetRegistry, VirtualWidgetRegistry, VirtualWidgetBuilder } from './virtual_widget_registry';
 import { ConfigProvider, DUIConfigProvider } from './page/config_provider';
 import { DUIPage, DUIPageProps, DUIPageController } from './page/page';
 import { DUIComponent } from './component/component';
@@ -23,7 +23,8 @@ import { createDUIPageRoute, DUIPageRoute } from './page/page_route';
 import { presentBottomSheet } from '../framework/utils/navigation_util';
 import { VirtualWidget } from './base/VirtualWidget';
 import { convertToTextStyle } from '../framework/utils/textstyle_util';
-import { StdLibFunctions } from '@digia/expr-rn';
+import { StdLibFunctions } from 'digia_expr';
+import { textBuilder, scaffoldBuilder, columnBuilder, rowBuilder, iconBuilder, imageBuilder, buttonBuilder, navigationBarBuilder, futureBuilder, stackBuilder, containerBuilder, carouselBuilder, conditionalBuilder, conditionalItemBuilder, safeAreaBuilder } from './builders';
 
 /**
  * Central factory class for creating Digia UI widgets, pages, and components.
@@ -108,8 +109,25 @@ export class DUIFactory {
                 'and await its completion before calling DUIFactory.getInstance().initialize().'
             );
         }
-
+        console.log('Initializing DUIFactory with DigiaUI instance:', digiaUIInstance);
         // Initialize widget registry with component builder
+        const builders = new Map<string, VirtualWidgetBuilder>([
+            ['digia/text', textBuilder],
+            ['fw/scaffold', scaffoldBuilder as VirtualWidgetBuilder],
+            ['digia/column', columnBuilder as VirtualWidgetBuilder],
+            ['digia/row', rowBuilder as VirtualWidgetBuilder],
+            ['digia/icon', iconBuilder as VirtualWidgetBuilder],
+            ['digia/image', imageBuilder as VirtualWidgetBuilder],
+            ['digia/button', buttonBuilder as VirtualWidgetBuilder],
+            ['digia/navigationbar', navigationBarBuilder as VirtualWidgetBuilder],
+            ['digia/futureBuilder', futureBuilder as VirtualWidgetBuilder],
+            ['digia/stack', stackBuilder as VirtualWidgetBuilder],
+            ['digia/container', containerBuilder as VirtualWidgetBuilder],
+            ['digia/carousel', carouselBuilder as VirtualWidgetBuilder],
+            ['digia/conditionalBuilder', conditionalBuilder as VirtualWidgetBuilder],
+            ['digia/conditionalItem', conditionalItemBuilder as VirtualWidgetBuilder],
+            ['digia/safeArea', safeAreaBuilder as VirtualWidgetBuilder]
+        ]);
         this.widgetRegistry = new DefaultVirtualWidgetRegistry({
             componentBuilder: (id, args) => {
                 // Create the component element
@@ -118,6 +136,7 @@ export class DUIFactory {
                 // Wrap in ComponentVirtualWidget
                 return componentElement;
             },
+            builders: builders
         });        // Initialize method binding registry for expression evaluation
         this.bindingRegistry = {}; // TODO: Implement MethodBindingRegistry
 

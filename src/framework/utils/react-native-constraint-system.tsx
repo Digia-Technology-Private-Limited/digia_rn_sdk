@@ -7,7 +7,6 @@ import {
     Text,
     DimensionValue,
 } from 'react-native';
-import { Layout } from 'react-native-reanimated';
 import { isViewBased } from './widget_util';
 
 // --------------------

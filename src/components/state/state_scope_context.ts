@@ -1,6 +1,6 @@
 import { DefaultScopeContext } from '../../framework/expr/default_scope_context';
 import { StateContext } from './state_context';
-import { ExprContext } from '@digia/expr-rn';
+import { ExprContext } from 'digia_expr';
 
 /**
  * Scope context for component state management.

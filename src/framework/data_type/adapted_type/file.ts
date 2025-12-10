@@ -6,9 +6,9 @@
  * to avoid hard runtime dependencies on optional modules.
  */
 
-import { ExprInstance } from "@digia/expr-rn";
+import { ExprInstance } from "digia_expr";
 
-export type ReadStreamLike = AsyncIterable<Uint8Array> | NodeJS.ReadableStream;
+export type ReadStreamLike = AsyncIterable<Uint8Array> | ReadableStream<Uint8Array>;
 
 export class AdaptedFile implements ExprInstance {
     path: string | null = null;

@@ -9,13 +9,6 @@ import {
     Animated,
 } from "react-native";
 import Carousel from "react-native-reanimated-carousel";
-import {
-    useSharedValue,
-    useAnimatedStyle,
-    interpolate,
-    Extrapolate,
-    withTiming,
-} from "react-native-reanimated";
 import { ScalingDot, SlidingDot } from "react-native-animated-pagination-dots";
 // Indicator package
 

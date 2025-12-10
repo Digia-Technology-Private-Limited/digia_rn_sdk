@@ -2,7 +2,6 @@ import {
     TextStyle,
     ViewStyle,
     FlexAlignType,
-    DimensionValue,
     KeyboardType,
     ReturnKeyType,
     TextInput,

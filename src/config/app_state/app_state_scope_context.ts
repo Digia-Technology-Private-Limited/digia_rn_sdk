@@ -1,4 +1,4 @@
-import { ExprContext, BasicExprContext } from '@digia/expr-rn';
+import { ExprContext, BasicExprContext } from 'digia_expr';
 import { ReactiveValue } from './reactive_value';
 
 /**

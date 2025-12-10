@@ -5,7 +5,7 @@
  * `ScrollController` and implemented an expression instance accessor.
  */
 
-import { ExprInstance } from "@digia/expr-rn";
+import { ExprInstance } from "digia_expr";
 
 export class AdaptedScrollController implements ExprInstance {
     offset: number | null = null;

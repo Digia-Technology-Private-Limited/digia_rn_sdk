@@ -216,7 +216,7 @@ const DUIComponentContent: React.FC<DUIComponentContentProps> = ({
             widgetHierarchy: [],
             actionExecutor: executor,
         })
-    );
+    ) as React.ReactElement;
 };
 
 /**

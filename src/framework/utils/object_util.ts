@@ -293,7 +293,7 @@ export function safeCast<R>(
     }
 
     // Log the cast error in development mode
-    if (process.env.NODE_ENV === 'development' && value !== null) {
+    if (__DEV__ && value !== null) {
         Logger.error(
             `CastError when trying to cast ${JSON.stringify(value)} to specified type`,
             'ObjectUtil',

@@ -313,7 +313,7 @@ const DUIPageContent: React.FC<DUIPageContentProps> = ({
         )
 
 
-    );
+    ) as React.ReactElement;
 };
 
 /**

@@ -56,6 +56,9 @@ export interface DigiaUIAppProps {
  * - Environment variable configuration
  * - Providing Digia UI context to child components
  *
+ * Note: Children components are only rendered after initialization is complete to ensure
+ * all SDK resources are properly set up before use.
+ *
  * @example
  * ```typescript
  * import { DigiaUIApp } from '@digia/rn-sdk';
@@ -90,8 +93,7 @@ export const DigiaUIApp: React.FC<DigiaUIAppProps> = ({
     environmentVariables,
     children,
 }) => {
-    // Track initialization state to ensure cleanup only happens after initialization
-    const initializedRef = useRef(false);
+    const [isInitialized, setIsInitialized] = React.useState(false);
 
     useEffect(() => {
         // Initialize the Digia UI manager with the provided configuration
@@ -114,18 +116,21 @@ export const DigiaUIApp: React.FC<DigiaUIAppProps> = ({
         }
 
         // Mark as initialized
-        initializedRef.current = true;
+        setIsInitialized(true);
 
-        // Cleanup function to run when component unmounts
+        // Cleanup logic if needed when component unmounts
         return () => {
-            if (initializedRef.current) {
-                // Clean up all Digia UI resources when the component is unmounted
-                DigiaUIManager.getInstance().destroy();
-                DUIAppState.instance.dispose();
-                DUIFactory.getInstance().destroy();
-            }
+            // Clean up all Digia UI resources when the widget is disposed
+            DigiaUIManager.getInstance().destroy();
+            DUIAppState.instance.dispose();
+            DUIFactory.getInstance().destroy();
         };
-    }, [digiaUI]); // Only re-run if digiaUI instance changes
+    }, []); // Run only once on mount
+
+    // Don't render children until initialization is complete
+    if (!isInitialized) {
+        return null; // Or a loading spinner
+    }
 
     // Wrap the child component tree with DigiaUIScope to provide
     // analytics and message bus context to all descendant components

@@ -1,4 +1,4 @@
-import { Expression } from '@digia/expr-rn';
+import { Expression } from 'digia_expr';
 import { to, ToType } from '../utils/object_util';
 import { ScopeContext } from './scope_context';
 

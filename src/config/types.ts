@@ -2,7 +2,7 @@
 //  * Core configuration types for Digia SDK
 //  * Maps to Flutter's DUIConfig model
 //  */
-
+export { }
 // export interface DUIConfig {
 //   pages: Record<string, PageDefinition>;
 //   components?: Record<string, ComponentDefinition>;

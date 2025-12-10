@@ -1,9 +1,9 @@
-import { ExprContext } from '@digia/expr-rn';
+import { ExprContext } from 'digia_expr';
 
 /**
  * Scope context for expression evaluation in the Digia UI SDK.
  * 
- * Extends the base ExprContext from @digia/expr-rn to provide additional
+ * Extends the base ExprContext from digia_expr to provide additional
  * functionality for creating derived contexts with extended variables.
  * 
  * This is used throughout the SDK to provide expression evaluation contexts
