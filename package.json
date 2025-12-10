@@ -1,6 +1,6 @@
 {
-  "name": "digia-rn-sdk",
-  "version": "1.0.0-beta.3",
+  "name": "digia_sdk",
+  "version": "1.0.0-beta.1",
   "description": "Digia React Native SDK - A comprehensive UI framework for React Native applications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -47,7 +47,7 @@
   "bugs": {
     "url": "https://github.com/RamSuthar-Digia/digia_rn_sdk/issues"
   },
-  "homepage": "https://github.com/RamSuthar-Digia/digia_rn_sdk#readme",
+  "homepage": "https://digia.tech",
   "dependencies": {
     "digia_expr": "^1.0.0",
     "@react-navigation/bottom-tabs": "^6.5.8",
